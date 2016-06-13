@@ -1,9 +1,9 @@
 # Todo
 - backup
-  - [ ] full
+  - [X] full
   - [ ] incremental
-  - [ ] ACL 
-  - [ ] xattr
+  - [X] ACL 
+  - [X] xattr
 - restore
   - [ ] full
   - [ ] incremental
