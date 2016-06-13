@@ -1,13 +1,13 @@
 # Todo
 - backup
-  [V] full
-  [ ] incremental
-  [V] ACL 
-  [V] xattr
+  - [ ] full
+  - [ ] incremental
+  - [ ] ACL 
+  - [ ] xattr
 - restore
-  [ ] full
-  [ ] incremental
-  [ ] ACL 
-  [ ] xattr
+  - [ ] full
+  - [ ] incremental
+  - [ ] ACL 
+  - [ ] xattr
 - [ ] config file
 - [ ] test cases
