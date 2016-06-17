@@ -1,7 +1,7 @@
 # Todo
 - backup
   - [X] full
-  - [ ] incremental
+  - [X] incremental
   - [X] ACL 
   - [X] xattr
 - restore
@@ -11,3 +11,4 @@
   - [ ] xattr
 - [ ] config file
 - [ ] test cases
+- [ ] user specfied parameter(such as --verbose --dryrun)
