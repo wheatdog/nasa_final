@@ -1,5 +1,19 @@
 #!/bin/bash
 
+# examples
+#
+# backup all the group in config.file
+# ./backup.sh -f config.file
+#
+# specify which group want to backup
+# ./backup.sh -f config.file group_name_1 group_name_2
+#
+# full backup
+# ./backup.sh -s source_dir -d dest_dir
+#
+# incremental backup
+# ./backup.sh -i -s source_dir -d dest_dir
+
 usage()
 {
 	echo "Usage: "`basename $0`" [-h] [-f config_file | -s source_directory -d destination_directory]" 1>&2
@@ -11,23 +25,43 @@ usage()
 # $3: incremental flag
 backup_one_dir()
 {
-    timestamp=`date +%Y-%m-%d.%H-%M-%S`
+    local src=$(realpath $1)
+    local dest=$(realpath $2)
+
+    local timestamp=`date +%Y-%m%d-%H%M%S`
 
     if [ $3 -eq 0 ]; then
-        sourcebasename=$(basename $1)
-        backupfilename=$2/$sourcebasename.$timestamp.tar.bz2
-        cd ${sourcedir%/*}
+        local sourcebasename=$(basename $src)
+        local backupfilename=$dest/$sourcebasename.$timestamp.tar.bz2
+        cd $(dirname $src)
         getfattr -Rd $sourcebasename > $sourcebasename.xattr
         getfacl -R $sourcebasename > $sourcebasename.acl
         tar -jpc -f $backupfilename $sourcebasename $sourcebasename.acl $sourcebasename.xattr
         rm $sourcebasename.acl $sourcebasename.xattr
     else
-        PRE=`cat lastback`
-        sync_target="$2/$timestamp"
-        OPTS="-avXA --force --delete --link-dest=$PRE"
-        rsync $OPTS $1 $sync_target
+        local PRE=`cat lastback`
+        local sync_target="$dest/$timestamp"
+        local OPTS="-avXA --force --delete --link-dest=$PRE"
+        echo "rsync $OPTS $src $sync_target "
+        rsync $OPTS $src $sync_target
         echo $sync_target > lastback
 	  fi
+}
+
+# $1: group
+# $2: input_dirs
+# $3: output_dir
+# $4: method
+process_group()
+{
+    echo "processing group $1"
+    echo $2 | tr ',' '\n' | while read this_dir; do
+        case "$4" in
+            f) backup_one_dir $this_dir $3 0;;
+            i) backup_one_dir $this_dir $3 1;;
+            *) echo "strange method setting in config file";;
+        esac
+    done
 }
 
 main()
@@ -36,7 +70,7 @@ main()
     local tmp_getopts=`getopt -o hf:s:d:i -- "$@"`
     eval set -- "$tmp_getopts"
 
-    #echo "parameter $@"
+    # echo "parameter $@"
     local file sourcedir destdir
     local has_config_file=0
     local incremental=0
@@ -52,17 +86,22 @@ main()
         esac
     done
 
-    #deal with relative path
-    if [ "${sourcedir:0:1}" != "/" ]; then
-        sourcedir="`pwd`/$sourcedir"
-    fi
-    if [ "${destdir:0:1}" != "/" ]; then
-        destdir="`pwd`/$destdir"
-    fi
-
-
     if [ "$has_config_file" -eq 1 ]; then
-        echo "Not support config file now!"
+        if [ $# -eq 0 ]; then
+            echo "processing all group specified in $file"
+            while read group input_dirs output_dir method; do
+                process_group $group $input_dirs $output_dir $method
+            done < "$file"
+        else
+            while [ $# -ne 0 ]; do
+                while read group input_dirs output_dir method; do
+                    if [ "$1" == "$group" ]; then
+                        process_group $group $input_dirs $output_dir $method
+                    fi
+                done < "$file"
+                shift 1
+            done
+        fi
     else
 		    backup_one_dir $sourcedir $destdir $incremental
 	  fi
