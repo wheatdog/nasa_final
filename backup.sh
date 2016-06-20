@@ -89,16 +89,20 @@ main()
     if [ "$has_config_file" -eq 1 ]; then
         if [ $# -eq 0 ]; then
             echo "processing all group specified in $file"
+            sed -e 's/#.*//g' -e '/^\s*$/d' "$file" | \
             while read group input_dirs output_dir method; do
+                echo "$group $input_dirs $output_dir $method"
                 process_group $group $input_dirs $output_dir $method
-            done < "$file"
+            done
         else
             while [ $# -ne 0 ]; do
+                sed -e 's/#.*//g' -e '/^\s*$/d' "$file" | \
                 while read group input_dirs output_dir method; do
+                    echo "$group $input_dirs $output_dir $method"
                     if [ "$1" == "$group" ]; then
                         process_group $group $input_dirs $output_dir $method
                     fi
-                done < "$file"
+                done
                 shift 1
             done
         fi
