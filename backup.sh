@@ -16,7 +16,7 @@
 
 usage()
 {
-	echo "Usage: "`basename $0`" [-h] [-f config_file | -s source_directory -d destination_directory]" 1>&2
+	echo "Usage: "`basename $0`" [--help] [-f config_file | [-n ...] -s source_directory -d destination_directory ]" 1>&2
 	exit 2
 }
 
@@ -48,6 +48,33 @@ backup_one_dir()
 	  fi
 }
 
+
+# $1: sourcedir
+# $2: username
+# $3: host_address
+# $4: destdir
+backup_one_dir_network()
+{
+    local src=$(realpath $1)
+    local OPTS="-avzP"
+    echo "rsync $OPTS $src -e ssh $2@$3:$4"
+    rsync $OPTS $src -e ssh $2@$3:$4
+}
+
+# $1: sourcedir
+# $2: username
+# $3: host_address
+# $4: passwddir
+# $5: module
+backup_one_dir_network_with_module()
+{
+    local src=$(realpath $1)
+    local passwddir=$(realpath $4)
+    local OPTS="-avzP"
+    echo "rsync $OPTS --password-file=$passwddir $src $2@$3::$5"
+    rsync $OPTS --password-file=$passwddir $src $2@$3::$5
+}
+
 # $1: group
 # $2: input_dirs
 # $3: output_dir
@@ -67,13 +94,16 @@ process_group()
 main()
 {
     [ $# -eq 0 ] && usage
-    local tmp_getopts=`getopt -o hf:s:d:i -- "$@"`
+    local tmp_getopts=`getopt -o hf:s:d:i:na:u:p:m: -- "$@"`
     eval set -- "$tmp_getopts"
 
     # echo "parameter $@"
-    local file sourcedir destdir
+    local file sourcedir destdir passwddir
+    local host_address username module
     local has_config_file=0
     local incremental=0
+    local network=0
+    local usemodule=0
     while true; do
         case "$1" in
             -h) usage;;
@@ -81,12 +111,17 @@ main()
             -s) sourcedir=${2%/}; shift 2;;
             -d) destdir=${2%/}; shift 2;;
             -i) incremental=1; shift 1;;
+            -n) network=1; shift 1;;
+            -a) host_address=${2%/}; shift 2;;
+            -u) username=${2%/}; shift 2;;
+            -p) passwddir=${2%/}; shift 2;;
+            -m) module=${2%/}; usemodule=1; shift 2;;
             --) shift; break;;
             *) usage;;
         esac
     done
 
-    if [ "$has_config_file" -eq 1 ]; then
+    if [ "$has_config_file" -eq 1 ]; then 
         if [ $# -eq 0 ]; then
             echo "processing all group specified in $file"
             sed -e 's/#.*//g' -e '/^\s*$/d' "$file" | \
@@ -107,7 +142,16 @@ main()
             done
         fi
     else
-		    backup_one_dir $sourcedir $destdir $incremental
+		    if [ "$network" -eq 1 ]; then
+                if [ "$usemodule" -eq 1 ]; then
+                    backup_one_dir_network_with_module $sourcedir $username $host_address $passwddir $module
+                else
+                    backup_one_dir_network $sourcedir $username $host_address $destdir
+                fi
+                
+            else
+                backup_one_dir $sourcedir $destdir $incremental
+            fi
 	  fi
 }
 

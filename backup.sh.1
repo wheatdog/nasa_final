@@ -8,11 +8,46 @@ backup.sh \- a backup utility
 .sp
 
 .B backup.sh
-[\-h] \-s \fIsource_directory\fR \-d \fIdestination_directory\fR
+[\-h] [\-n ...] \-s \fIsource_directory\fR \-d \fIdestination_directory\fR
 
 .SH DESCRIPTION
+.PP
+A backup shell script which supports full and incremental backups, local and remote backup, and config file.
+.TP
+\fB\-h\fR
+Print usage, which is the same as the synopsis shows.
+.TP
+\fB\-s\fR \fIsource_directory\fR
+Specify the input as the source directory.
+.TP
+\fB\-d\fR \fIdestination_directory\fR
+Specify the input as the destination directory.
+.TP
+\fB\-a\fR \fIhost_address\fR
+Specify the input as the remote host address.
+.TP
+\fB\-u\fR \fIusername\fR
+Specify the input as the username of the remote host, used with options \fB\-a\fR.
+.TP
+\fB\-p\fR \fIpassword_directory\fR
+Specify the input as the password directory, when a remote rsync server is enabled.
+\fB\-m\fR \fImodule_name\fR
+Specify the input as the module name, which is defined in \fB/etc/rsyncd.conf\fR in the remote server.
+.PP
+.SH OPTIONS
+.PP
+.TP
+\fB\-f\fR \fIconfig_file\fR
+Reads the config file and apply the settings of it.
+.TP
+\fB\-n\fR
+Remote backup. Must be used with either "\fB\-s\fR, \fB\-d\fR, \fB\-a\fR, \fB\-u\fR" or "\fB\-s\fR, \fB\-a\fR, \fB\-u\fR, \fB\-p\fR, \fB\-m\fR".
+.TP
+\fB\-i\fR
+Use incremental backup.
+.PP
 .SH AUTHOR
-Written by NASA 2016 final project group SA1-1, Yen-Ting Liu, Yi-Ting Yeh and Kuan-Chun Wang, department of computer science and information engineering (CSIE), National Taiwan University (NTU).
+Written by NASA 2016 final project group SA1-1, department of computer science and information engineering (CSIE), National Taiwan University (NTU).
 .SH COPYRIGHT 
 Copyright \(co 2016 NASA, CSIE, NTU.
 Lincense GPLv3+: GNU GPL version 3 or later <http://gnu.org/lincenses/gpl.html>.
