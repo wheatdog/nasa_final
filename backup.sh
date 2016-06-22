@@ -18,7 +18,7 @@ timestamp=`date +%Y-%m%d-%H%M%S`
 
 usage()
 {
-    echo "Usage: "`basename $0`" [-h] [-f config_file | [-n ...] -s source_directory -d destination_directory ]" 1>&2
+    echo "Usage: "`basename $0`" [-h] [-f config_file | -s source_directory -d destination_directory ]" 1>&2
     exit 2
 }
 
@@ -44,7 +44,7 @@ backup_one_dir()
 
     if [ $3 -eq 0 ]; then
         local OPTS="-avXA --force --delete"
-        rsync $OPTS $src/ $sync_target
+        rsync $OPTS $src $sync_target
     else
         base=$(dirname $1)
         local PRE=`cat $(basename $src).lastback`
@@ -77,7 +77,6 @@ main()
     local tmp_getopts=`getopt -o hif:s:d: -l help,incremental,config-file:,src:,dest: -- "$@"`
     eval set -- "$tmp_getopts"
 
-    echo "parameter $@"
     local file sourcedir
     local has_config_file=0
     local incremental=0
