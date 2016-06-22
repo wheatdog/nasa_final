@@ -1,18 +1,18 @@
 .\" This is the manpage for backup.sh, a script used for backup, required in the final project of NASA 2016, CSIE, NTU
-.TH BACKUP.SH "1" "June 2016" "NASA 2016 Final SA1-1" "Script Manuals"
+.TH RESTORE.SH "1" "June 2016" "NASA 2016 Final SA1-1" "Script Manuals"
 .SH NAME
-backup.sh \- a backup utility
+restore.sh \- opposite of backup.sh
 .SH SYNOPSIS
-.B backup.sh
+.B restore.sh
 [\-h] \-f \fIconfig_file\fR
 .sp
 
-.B backup.sh
-[\-h] [\-i] \-s \fIsource_directory\fR \-d \fIdestination_directory\fR
+.B restore.sh
+[\-h] \-s \fIsource_directory\fR \-d \fIdestination_directory\fR
 
 .SH DESCRIPTION
 .PP
-A backup shell script which supports full and incremental backups, local and remote backup, and config file.
+A backup shell script which restores the backed up files by backup.sh.
 .TP
 \fB\-h\fR, \fB\-\-help\fR
 Print usage, which is the same as the synopsis shows.
@@ -22,15 +22,15 @@ Specify the input as the source directory.
 .TP
 \fB\-d\fR, \fB\-\-dest\fR \fIdestination_directory\fR
 Specify the input as the destination directory.
+.TP
+\fB\-t\fR, \fB\-\-time\fR \fItimestamp\fR
+Designate the timestamp for restoration.
 .PP
 .SH OPTIONS
 .PP
 .TP
 \fB\-f\fR, \fB\-\-config\-file\fR \fIconfig_file\fR
 Reads the config file and apply the settings of it.
-.TP
-\fB\-i\fR, \fB\-\-incremental\fR
-Enable incremental backup.
 .PP
 .SH AUTHOR
 Written by NASA 2016 final project group SA1-1, department of computer science and information engineering (CSIE), National Taiwan University (NTU).
@@ -41,4 +41,4 @@ Lincense GPLv3+: GNU GPL version 3 or later <http://gnu.org/lincenses/gpl.html>.
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.
 .SH "SEE ALSO"
-.BR restore.sh (1)
+.BR backup.sh (1)

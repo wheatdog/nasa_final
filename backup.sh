@@ -62,12 +62,9 @@ process_group()
 {
     echo "processing group $1"
     echo $2 | tr ',' '\n' | while read this_dir; do
-        folder_name=$(echo $this_dir | tr '/' '-')
-        folder_name="${folder_name:1}-$time_string"
-        folder_name="${3}/$folder_name}"
         case "$4" in
-            f) backup_one_dir $this_dir $folder_name 0;;
-            i) backup_one_dir $this_dir $folder_name 1;;
+            f) backup_one_dir ${this_dir} $3 0;;
+            i) backup_one_dir ${this_dir} $3 1;;
             *) echo "strange method setting in config file";;
         esac
     done
