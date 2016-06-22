@@ -21,7 +21,7 @@ process_group()
 {
     echo "processing group $1"
     echo $2 | tr ',' '\n' | while read this_dir; do
-        folder_name=$(echo $this_dir | tr '\' '-')
+        folder_name=$(echo $this_dir | tr '/' '-')
         folder_name="${folder_name:1}-$time_string"
         echo $folder_name
         restore_one_dir $output_dir/${1}/$folder_name $this_dirs
