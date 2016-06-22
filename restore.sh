@@ -12,7 +12,7 @@ restore_one_dir()
 {
     rm -rf $2
     mkdir -p $(dirname $2)
-    scp -r ${1%/} ${2%/}
+    rsync -avXA --force --delete ${1%/}/ ${2%/}
 }
 
 # $1: group
