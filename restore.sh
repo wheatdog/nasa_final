@@ -10,7 +10,9 @@ usage()
 # $2: to
 restore_one_dir()
 {
-    scp -r $1 $2
+    rm -rf $2
+    mkdir -p $(dirname $2)
+    scp -r ${1%/} ${2%/}
 }
 
 # $1: group

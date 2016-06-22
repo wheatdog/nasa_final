@@ -40,17 +40,18 @@ backup_one_dir()
     local src=$(expand_path $1)
     local dest=$(expand_path $2)
 
-    local sync_target="$dest/$(basename $src)-$timestamp"
-    local OPTS="-avXA --force --delete"
+    local sync_target="${dest%/}/$(basename $src)-$timestamp"
 
     if [ $3 -eq 0 ]; then
+        local OPTS="-avXA --force --delete"
         rsync $OPTS $src/ $sync_target
     else
-        local PRE=`cat lastback`
-        OPTS+="--link-dest=$PRE"
+        base=$(dirname $1)
+        local PRE=`cat $(basename $src).lastback`
+        local OPTS="-avXA --force --delete --link-dest=$PRE"
         echo "rsync $OPTS $src $sync_target "
         rsync $OPTS $src $sync_target
-        echo $sync_target > lastback
+        echo "../$(basename $src)-$timestamp" > $(basename $src).lastback
     fi
 }
 
