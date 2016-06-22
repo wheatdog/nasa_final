@@ -32,6 +32,23 @@ Reads the config file and apply the settings of it.
 \fB\-i\fR, \fB\-\-incremental\fR
 Enable incremental backup.
 .PP
+.SH CONFIG FILE MODULES
+The script supports config files. A config file must be written in a certain format:
+.TP
+<\fIgroup\fR> <\fIsource_dir\fR> <\fIdest_dir\fR> <\fImethod\fR>
+.PP
+.TP 
+\fIgroup\fR
+The group name of the backup entry.
+.TP
+\fIsource_dir\fR
+The source directories. If there are more than one directorits, separate them with a comma.
+.TP
+\fIdest_dir\fR
+The destination directory. Can assign a remote directory, and the script will use \fBrsync (1)\fR to backup.
+.TP
+\fImethod\fR
+The method of backup. "\fBf\fR" represents full backup, and "\fBi\fR" represents incremental backup.
 .SH AUTHOR
 Written by NASA 2016 final project group SA1-1, department of computer science and information engineering (CSIE), National Taiwan University (NTU).
 .SH COPYRIGHT 
@@ -41,4 +58,4 @@ Lincense GPLv3+: GNU GPL version 3 or later <http://gnu.org/lincenses/gpl.html>.
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.
 .SH "SEE ALSO"
-.BR restore.sh (1)
+.BR restore.sh (1), rsync (1)
