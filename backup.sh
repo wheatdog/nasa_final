@@ -16,8 +16,18 @@
 
 usage()
 {
-	echo "Usage: "`basename $0`" [--help] [-f config_file | [-n ...] -s source_directory -d destination_directory ]" 1>&2
-	exit 2
+    echo "Usage: "`basename $0`" [-h] [-f config_file | [-n ...] -s source_directory -d destination_directory ]" 1>&2
+    exit 2
+}
+
+# $1 path
+expand_path()
+{
+    if [[ $1 == *"@"* ]]; then
+        echo $1
+    else
+        echo $(realpath $1)
+    fi
 }
 
 # $1: source directory
@@ -25,54 +35,23 @@ usage()
 # $3: incremental flag
 backup_one_dir()
 {
-    local src=$(realpath $1)
-    local dest=$(realpath $2)
+    local src=$(expand_path $1)
+    local dest=$(expand_path $2)
 
     local timestamp=`date +%Y-%m%d-%H%M%S`
 
+    local sync_target="$dest/$(basename $src)-$timestamp"
+    local OPTS="-avXA --force --delete"
+
     if [ $3 -eq 0 ]; then
-        local sourcebasename=$(basename $src)
-        local backupfilename=$dest/$sourcebasename.$timestamp.tar.bz2
-        cd $(dirname $src)
-        getfattr -Rd $sourcebasename > $sourcebasename.xattr
-        getfacl -R $sourcebasename > $sourcebasename.acl
-        tar -jpc -f $backupfilename $sourcebasename $sourcebasename.acl $sourcebasename.xattr
-        rm $sourcebasename.acl $sourcebasename.xattr
+        rsync $OPTS $src/ $sync_target
     else
         local PRE=`cat lastback`
-        local sync_target="$dest/$timestamp"
-        local OPTS="-avXA --force --delete --link-dest=$PRE"
+        OPTS+="--link-dest=$PRE"
         echo "rsync $OPTS $src $sync_target "
         rsync $OPTS $src $sync_target
         echo $sync_target > lastback
-	  fi
-}
-
-
-# $1: sourcedir
-# $2: username
-# $3: host_address
-# $4: destdir
-backup_one_dir_network()
-{
-    local src=$(realpath $1)
-    local OPTS="-avzP"
-    echo "rsync $OPTS $src -e ssh $2@$3:$4"
-    rsync $OPTS $src -e ssh $2@$3:$4
-}
-
-# $1: sourcedir
-# $2: username
-# $3: host_address
-# $4: passwddir
-# $5: module
-backup_one_dir_network_with_module()
-{
-    local src=$(realpath $1)
-    local passwddir=$(realpath $4)
-    local OPTS="-avzP"
-    echo "rsync $OPTS --password-file=$passwddir $src $2@$3::$5"
-    rsync $OPTS --password-file=$passwddir $src $2@$3::$5
+    fi
 }
 
 # $1: group
@@ -94,65 +73,48 @@ process_group()
 main()
 {
     [ $# -eq 0 ] && usage
-    local tmp_getopts=`getopt -o hf:s:d:i:na:u:p:m: -- "$@"`
+    local tmp_getopts=`getopt -o hi:fsd: -l help,incremental:,config-file:,src:,dest: -- "$@"`
     eval set -- "$tmp_getopts"
 
-    # echo "parameter $@"
-    local file sourcedir destdir passwddir
-    local host_address username module
+    echo "parameter $@"
+    local file sourcedir
     local has_config_file=0
     local incremental=0
-    local network=0
-    local usemodule=0
     while true; do
         case "$1" in
-            -h) usage;;
-            -f) has_config_file=1; file=$2; shift 2;;
-            -s) sourcedir=${2%/}; shift 2;;
-            -d) destdir=${2%/}; shift 2;;
-            -i) incremental=1; shift 1;;
-            -n) network=1; shift 1;;
-            -a) host_address=${2%/}; shift 2;;
-            -u) username=${2%/}; shift 2;;
-            -p) passwddir=${2%/}; shift 2;;
-            -m) module=${2%/}; usemodule=1; shift 2;;
+            -h|--help)        usage;;
+            -f|--config-file) has_config_file=1; file=$2; shift 2;;
+            -s|--src)         sourcedir=${2%/}; shift 2;;
+            -d|--dest)        destdir=${2%/}; shift 2;;
+            -i|--incremental) incremental=1; shift 1;;
             --) shift; break;;
             *) usage;;
         esac
     done
 
-    if [ "$has_config_file" -eq 1 ]; then 
+    if [ "$has_config_file" -eq 0 ]; then
+        backup_one_dir $sourcedir $destdir $incremental
+    else
         if [ $# -eq 0 ]; then
             echo "processing all group specified in $file"
             sed -e 's/#.*//g' -e '/^\s*$/d' "$file" | \
-            while read group input_dirs output_dir method; do
-                echo "$group $input_dirs $output_dir $method"
-                process_group $group $input_dirs $output_dir $method
-            done
+                while read group input_dirs output_dir method; do
+                    echo "$group $input_dirs $output_dir $method"
+                    process_group $group $input_dirs $output_dir $method
+                done
         else
             while [ $# -ne 0 ]; do
                 sed -e 's/#.*//g' -e '/^\s*$/d' "$file" | \
-                while read group input_dirs output_dir method; do
-                    echo "$group $input_dirs $output_dir $method"
-                    if [ "$1" == "$group" ]; then
-                        process_group $group $input_dirs $output_dir $method
-                    fi
-                done
+                    while read group input_dirs output_dir method; do
+                        echo "$group $input_dirs $output_dir $method"
+                        if [ "$1" == "$group" ]; then
+                            process_group $group $input_dirs $output_dir $method
+                        fi
+                    done
                 shift 1
             done
         fi
-    else
-		    if [ "$network" -eq 1 ]; then
-                if [ "$usemodule" -eq 1 ]; then
-                    backup_one_dir_network_with_module $sourcedir $username $host_address $passwddir $module
-                else
-                    backup_one_dir_network $sourcedir $username $host_address $destdir
-                fi
-                
-            else
-                backup_one_dir $sourcedir $destdir $incremental
-            fi
-	  fi
+    fi
 }
 
 main "$@"
