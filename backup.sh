@@ -14,6 +14,8 @@
 # incremental backup
 # ./backup.sh -i -s source_dir -d dest_dir
 
+timestamp=`date +%Y-%m%d-%H%M%S`
+
 usage()
 {
     echo "Usage: "`basename $0`" [-h] [-f config_file | [-n ...] -s source_directory -d destination_directory ]" 1>&2
@@ -37,8 +39,6 @@ backup_one_dir()
 {
     local src=$(expand_path $1)
     local dest=$(expand_path $2)
-
-    local timestamp=`date +%Y-%m%d-%H%M%S`
 
     local sync_target="$dest/$(basename $src)-$timestamp"
     local OPTS="-avXA --force --delete"
@@ -73,7 +73,7 @@ process_group()
 main()
 {
     [ $# -eq 0 ] && usage
-    local tmp_getopts=`getopt -o hi:fsd: -l help,incremental:,config-file:,src:,dest: -- "$@"`
+    local tmp_getopts=`getopt -o hif:s:d: -l help,incremental,config-file:,src:,dest: -- "$@"`
     eval set -- "$tmp_getopts"
 
     echo "parameter $@"
