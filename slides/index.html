@@ -1,0 +1,141 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>NASASA1-1</title>
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/black.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+                          <section>
+                            <h2>NASA FINAL SA1-1</h2>
+                          </section>
+
+                          <section>
+                            <section>
+                              <h2>目標</h2>
+                            </section>
+                            <section>
+                              <h3>設計一個備份script</h3>
+                            </section>
+                            <section>
+                              <h3>基本功能</h3>
+                              <p>支援full backup與incremental backup</p>
+                              <p>保存檔案權限,包括ACL與xattr</p>
+                              <p>可以讀入設定檔將備份資料夾分組並指定要備份哪組</p>
+                            </section>
+                            <section>
+                              <h3>額外要求</h3>
+                              <p>設置兩台VM於每天半夜0:00備份到另一台</p>
+                            </section>
+                          </section>
+
+                          <section>
+                            <section>
+                              <h2>實作方法</h2>
+                            </section>
+                            <section>
+                              <h3>rsync</h3>
+                              <p>A fast,versatile,remote (and local) file-copying tool</p>
+                            </section>
+                            <section>
+                              <h3>秒殺ACL,xattr</h3>
+                              <img src="img/rsyncopt1.jpg" width="100%">
+                            </section>
+                            <section>
+                              <h3>秒殺remote sync</h3>
+                              <img src="img/rsyncopt2.jpg" width="100%">
+                              <p>預設就可以遠端同步東西了...</p>
+                            </section>
+                          </section>
+
+                          <section>
+                            <section>
+                              <h2>full backup and incremental backup</h2>
+                            </section>
+                            <section>
+                              <h3>full backup</h3>
+                              <p>大家熟悉的直接複製貼上全部要backup的東西</p>
+                              <p>rsync如果目標資料夾是empty預設就是這樣的行為</p>
+                            </section>
+                            <section>
+                              <h3>incremental backup</h3>
+                              <p>每次備份的時候僅備份和上次備份有差異的檔案</p>
+                              <img src="img/incremental.jpg">
+                            </section>
+                            <section>
+                              <p>利用 --link-dest=DIR 實現</p>
+                              <p>當rsync運作時檢查要複製的檔案是否和 DIR 裡的一樣 </p>
+                              <p>如果和 DIR 的一樣則不複製，改成 hardlink 到 DIR 的該 file </p>
+                              <p>這樣子可以避免重複複製檔案</p>
+                            </section>
+                            <section>
+                              <img src="img/hlink.jpg">
+                            </section>
+                          </section>
+
+                          <section>
+                            <section>
+                              <h2>定時自動備份</h2>
+                            </section>
+                            <section>
+                              <h3>crontab</h3>
+                              <p>更改 /etc/crontab</p>
+                            </section>
+                          </section>
+
+                          <section>
+                            <h2>Demo</h2>
+                          </section>
+
+                          <section>
+                            <section>
+                              <h2>To do</h2>
+                            </section>
+                            <section>
+                              <h3>more user specfied command</h3>
+                              <p>such as --dry-run</p>
+                            </section>
+                          </section>
+                          <section>
+                            <h2>END</h2>
+                          </section>
+			</div>
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// More info https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				history: true,
+
+				// More info https://github.com/hakimel/reveal.js#dependencies
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+				]
+			});
+		</script>
+	</body>
+</html>
