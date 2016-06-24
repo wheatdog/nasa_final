@@ -12,4 +12,5 @@
 - [X] config file
 - [X] manual file
 - [X] slides
+- [X] report
 - [ ] user specfied parameter(such as --verbose --dryrun)
