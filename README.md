@@ -5,10 +5,11 @@
   - [X] ACL 
   - [X] xattr
 - restore
-  - [ ] full
-  - [ ] incremental
-  - [ ] ACL 
-  - [ ] xattr
-- [ ] config file
-- [ ] test cases
+  - [X] full
+  - [X] incremental
+  - [X] ACL 
+  - [X] xattr
+- [X] config file
+- [X] manual file
+- [X] slides
 - [ ] user specfied parameter(such as --verbose --dryrun)
